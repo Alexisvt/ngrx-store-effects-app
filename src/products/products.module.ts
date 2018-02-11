@@ -13,7 +13,8 @@ import * as fromContainers from './containers';
 // services
 import * as fromServices from './services';
 import { StoreModule } from '@ngrx/store';
-import { reducers } from './store';
+import { reducers, effects } from './store';
+import { EffectsModule } from '@ngrx/effects';
 
 // routes
 export const ROUTES: Routes = [
@@ -22,11 +23,11 @@ export const ROUTES: Routes = [
     component: fromContainers.ProductsComponent,
   },
   {
-    path: ':id',
+    path: 'new',
     component: fromContainers.ProductItemComponent,
   },
   {
-    path: 'new',
+    path: ':pizzaId',
     component: fromContainers.ProductItemComponent,
   },
 ];
@@ -38,6 +39,7 @@ export const ROUTES: Routes = [
     HttpClientModule,
     RouterModule.forChild(ROUTES),
     StoreModule.forFeature('products', reducers),
+    EffectsModule.forFeature(effects),
   ],
   providers: [...fromServices.services],
   declarations: [...fromContainers.containers, ...fromComponents.components],
