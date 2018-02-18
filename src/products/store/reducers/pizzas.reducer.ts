@@ -1,77 +1,76 @@
 import { Pizza } from '../../models/pizza.model';
-import {
-  PizzasAction,
-  LOAD_PIZZAS,
-  LOAD_PIZZAS_SUCCESS,
-  LOAD_PIZZAS_FAIL,
-} from '../action/pizzas.action';
+import * as fromPizzas from '../actions';
 
 export interface IPizzaState {
-  data: Pizza[];
+  entities: { [id: number]: Pizza };
   loaded: boolean;
   loading: boolean;
 }
 
 export const initialState: IPizzaState = {
-  data: [
-    {
-      name: "Blazin' Inferno",
-      toppings: [
-        {
-          id: 10,
-          name: 'pepperoni',
-        },
-        {
-          id: 9,
-          name: 'pepper',
-        },
-        {
-          id: 3,
-          name: 'basil',
-        },
-        {
-          id: 4,
-          name: 'chili',
-        },
-        {
-          id: 7,
-          name: 'olive',
-        },
-        {
-          id: 2,
-          name: 'bacon',
-        },
-      ],
-      id: 1,
-    },
-  ],
+  entities: {},
   loaded: false,
   loading: false,
 };
 
 export function reducer(
   state = initialState,
-  action: PizzasAction
+  action: fromPizzas.PizzasAction
 ): IPizzaState {
   switch (action.type) {
-    case LOAD_PIZZAS: {
+    case fromPizzas.LOAD_PIZZAS: {
       return {
         ...state,
         loading: true,
       };
     }
-    case LOAD_PIZZAS_SUCCESS: {
+    case fromPizzas.LOAD_PIZZAS_SUCCESS: {
+      const pizzas = action.payload;
+
+      const entities = pizzas.reduce(
+        (entities: { [id: number]: Pizza }, pizza: Pizza) => {
+          return {
+            ...entities,
+            [pizza.id]: pizza,
+          };
+        },
+        {
+          ...state.entities,
+        }
+      );
       return {
         ...state,
         loading: false,
         loaded: true,
+        entities,
       };
     }
-    case LOAD_PIZZAS_FAIL: {
+    case fromPizzas.LOAD_PIZZAS_FAIL: {
       return {
         ...state,
         loading: false,
         loaded: false,
+      };
+    }
+    case fromPizzas.UPDATE_PIZZA_SUCCESS:
+    case fromPizzas.CREATE_PIZZA_SUCCESS: {
+      const pizza = action.payload;
+      const entities = {
+        ...state.entities,
+        [pizza.id]: pizza,
+      };
+
+      return {
+        ...state,
+        entities,
+      };
+    }
+    case fromPizzas.REMOVE_PIZZA_SUCCESS: {
+      const pizza = action.payload;
+      const { [pizza.id]: removed, ...entities } = state.entities;
+      return {
+        ...state,
+        entities,
       };
     }
   }
@@ -80,4 +79,4 @@ export function reducer(
 
 export const getPizzasLoading = (state: IPizzaState) => state.loading;
 export const getPizzasLoaded = (state: IPizzaState) => state.loaded;
-export const getPizzas = (state: IPizzaState) => state.data;
+export const getPizzasEntities = (state: IPizzaState) => state.entities;
